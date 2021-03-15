@@ -1,4 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
+const uuid = require('uuid');
 
 class User extends Model {
   static init(sequelize) {
@@ -10,16 +11,20 @@ class User extends Model {
       },
       { sequelize }
     );
+
+    this.addHook('beforeSave', async (user) => {
+      return (user.id = uuid.v4());
+    });
   }
 
   static associate(models) {
     this.hasMany(models.Post, { foreignKey: 'user_id', as: 'posts' });
-    this.hasMany(models.User, {
+    this.belongsToMany(models.User, {
       foreignKey: 'follower_id',
       through: 'user_follow',
       as: 'following',
     });
-    this.hasMany(models.User, {
+    this.belongsToMany(models.User, {
       foreignKey: 'followed_id',
       through: 'user_follow',
       as: 'followers',
